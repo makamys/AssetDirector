@@ -3,12 +3,6 @@ plugins {
     id 'maven'
 }
 
-version = "0.0"
-/*
-configurations {
-	archives
-}*/
-
 ext.gameVersions = game_versions.split(",")
 
 def toBaseVersion(ver){
@@ -19,33 +13,6 @@ def getVersionProjectPath(ver){
 	return "${projectDir}/projects/${ver}"
 }
 
-def getFiles(ver) {
-	def files = []
-	new File("${getVersionProjectPath(ver)}/build/libs").eachFile(groovy.io.FileType.FILES, {
-		if(!(it.name.endsWith("-sources.jar") || it.name.endsWith("-dev.jar"))){
-			files << it
-		}
-	})
-	return files
-}
-
-def getFiles() {
-	def files = []
-	project.gameVersions.collect({toBaseVersion(it)}).each {
-		files += getFiles(it)
-	}
-	return files
-}
-
-// for debug
-task listFiles {
-	doLast {
-		project.gameVersions.collect({toBaseVersion(it)}).each {
-			println("$it: ${getFiles(it)}")
-		}
-	}
-}
-
 project.gameVersions.collect({toBaseVersion(it)}).each { ver ->
 	def dir = getVersionProjectPath(ver)
 	task ("cleanBuild-$ver", type: Exec) {
@@ -53,19 +20,6 @@ project.gameVersions.collect({toBaseVersion(it)}).each { ver ->
 		commandLine 'sh', '-c', "./gradlew clean && ./gradlew install"
 	}
 }
-/*
-task build(dependsOn: project.gameVersions.collect({"cleanBuild-${toBaseVersion(it)}"})) {
-
-}*/
-/*
-task build {
-
-}
-*/
-/*
-artifacts {
-	archives file: file("test.txt")
-}*/
 
 tasks.install.dependsOn {
 	project.gameVersions.collect({"cleanBuild-${toBaseVersion(it)}"})
